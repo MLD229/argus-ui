@@ -40,11 +40,28 @@ adresse_fixe() {
 say() { echo "[argus-ui] $*"; }
 ui_actif() { [ -f "$PID_SRV" ] && kill -0 "$(cat "$PID_SRV" 2>/dev/null)" 2>/dev/null; }
 
+# Décrit l'agent en une ligne, quel que soit le mode d'installation.
+mode_agent() {
+  local deploy="${ARGUS_DEPLOY:-$HOME/projects/argus-deploy}"
+  if [ -x "$deploy/argus" ] && docker ps --filter 'name=^argus-confine$' --format '{{.Names}}' 2>/dev/null | grep -q .; then
+    "$deploy/argus" --etat 2>/dev/null | head -1
+  elif [ -f "$HERE/serveur-ui.py" ]; then
+    local m
+    m=$(curl -s -m 4 "http://127.0.0.1:$PORT/api/sante" 2>/dev/null | grep -oE '"mode": *"[a-z]+"' | grep -oE 'conteneur|local')
+    [ -n "$m" ] && echo "mode $m" || echo "arrêté"
+  else
+    echo "(inconnu)"
+  fi
+}
+
 demarrer_ui() {
   if ui_actif; then say "interface déjà en ligne (pid $(cat "$PID_SRV"))."; return 0; fi
-  # L'agent confiné doit tourner : le wrapper ./argus le démarre si besoin.
-  [ -x /home/momo/projects/argus-deploy/argus ] && \
-    /home/momo/projects/argus-deploy/argus --start >/dev/null 2>&1 || true
+  # Déploiement complet (agent isolé) : si le dossier de déploiement existe, on
+  # l'indique au serveur — il saura trouver le magasin de notifications partagé
+  # et parler au conteneur. Sinon, installation simple : le serveur appellera
+  # directement la commande `hermes` de la machine.
+  local deploy="${ARGUS_DEPLOY:-$HOME/projects/argus-deploy}"
+  [ -d "$deploy" ] && export ARGUS_DEPLOY="$deploy"
   say "démarrage de l'interface (port $PORT)…"
   nohup python3 "$HERE/serveur-ui.py" --port "$PORT" > "$HERE/.ui.log" 2>&1 &
   echo $! > "$PID_SRV"
@@ -100,7 +117,7 @@ case "${1:-}" in
 
   --status)
     echo "interface : $(ui_actif && echo 'EN LIGNE' || echo 'arrêtée')"
-    echo "agent     : $(/home/momo/projects/argus-deploy/argus --etat 2>/dev/null | head -1)"
+    echo "agent     : $(mode_agent)"
     echo "accès fixe:"; "$TS_BIN" serve status 2>/dev/null | sed 's/^/            /' || echo "            (tailscale indisponible)"
     afficher
     exit 0 ;;

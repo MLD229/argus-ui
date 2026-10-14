@@ -48,6 +48,21 @@ echo "== 7. Le lanceur repond sans planter =="
 "$LANCEUR" --status >/dev/null 2>&1
 R "argus-ui --status (code 0)"   "$?" "0"
 
+echo "== 8. Le serveur sait parler à l'agent en mode LOCAL (sans conteneur) =="
+python3 - "$HERE/serveur-ui.py" <<'PY'
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("srv", sys.argv[1])
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+assert m.mode_actif() in ("conteneur", "local"), m.mode_actif()
+assert callable(m._hermes_local)
+assert "ARGUS_MODE" in open(sys.argv[1]).read()
+print("  OK   double mode (conteneur + local) présent")
+PY
+[ $? -eq 0 ] && ok=$((ok+1)) || ko=$((ko+1))
+
+echo "== 9. Aucun chemin personnel en dur dans le serveur =="
+R "pas de /home/momo"             "$(grep -c '/home/momo' "$HERE/serveur-ui.py")" "0"
+
 echo
 echo "===== $ok OK, $ko échec(s) ====="
 [ "$ko" -eq 0 ] || exit 1

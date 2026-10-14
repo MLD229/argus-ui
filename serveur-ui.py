@@ -47,14 +47,35 @@ UI_DIR = HERE                                  # ce script vit DANS ui-web/
 ETAT_DIR = os.path.join(HERE, ".etat")           # persistance : conversations, fichiers
 CONVS_FILE = os.path.join(ETAT_DIR, "conversations.json")
 UPLOADS_DIR = os.path.join(ETAT_DIR, "uploads")
-ARGUS_DEPLOY = "/home/momo/projects/argus-deploy"
-CONTENEUR = "argus-confine"
-PROFIL = "argus-client"
+ARGUS_DEPLOY = os.environ.get("ARGUS_DEPLOY", "")
+CONTENEUR = os.environ.get("ARGUS_CONTENEUR", "argus-confine")
+PROFIL = os.environ.get("ARGUS_PROFIL", "argus-client")
 
-# Magasin de notifications PARTAGÉ hôte <-> conteneur (bind-mount ./notifs).
-# L'agent écrit /opt/argus-notifs/notifications.json ; l'hôte voit le même
-# fichier ici. C'est ce qui alimente le panneau et le badge de l'interface.
-NOTIFS_FILE = "/home/momo/projects/argus-deploy/notifs/notifications.json"
+# ---------------------------------------------------------------------------
+#  DEUX FAÇONS DE PARLER À L'AGENT (choisies automatiquement)
+#
+#  1. CONTENEUR : l'agent tourne dans un conteneur isolé (déploiement complet).
+#     Le serveur l'appelle par `docker exec`.
+#  2. LOCAL : l'agent tourne directement sur la machine (installation simple).
+#     Le serveur appelle la commande `hermes` installée sur le système.
+#
+#  Le mode est déduit au démarrage : si le conteneur attendu est joignable, on
+#  l'utilise ; sinon on retombe sur l'installation locale. Forçable par
+#  ARGUS_MODE=conteneur|local.
+# ---------------------------------------------------------------------------
+MODE = os.environ.get("ARGUS_MODE", "").strip().lower()
+
+# Magasin de notifications partagé avec l'agent.
+#  - déploiement complet : un dossier partagé est indiqué par ARGUS_DEPLOY ;
+#  - installation simple : l'agent et le serveur sont sur la MÊME machine, donc
+#    on utilise le magasin standard de Hermes (~/.hermes/argus-notifs).
+# Surchargeable par ARGUS_NOTIFS_FILE.
+_DEF_NOTIFS = os.path.join(os.path.expanduser("~"), ".hermes", "argus-notifs",
+                           "notifications.json")
+_PARTAGE = (os.path.join(ARGUS_DEPLOY, "notifs", "notifications.json")
+            if ARGUS_DEPLOY and os.path.isdir(os.path.join(ARGUS_DEPLOY, "notifs"))
+            else "")
+NOTIFS_FILE = os.environ.get("ARGUS_NOTIFS_FILE", "") or _PARTAGE or _DEF_NOTIFS
 
 _lock = threading.Lock()
 
@@ -129,11 +150,36 @@ def demarrer_conteneur():
     p = _docker(["start", CONTENEUR])
     if p.returncode == 0:
         return True
-    # Repli : le wrapper ./argus sait démarrer proprement (compose).
-    script = os.path.join(ARGUS_DEPLOY, "argus")
-    if os.path.exists(script):
-        subprocess.run(["bash", script, "--start"], capture_output=True, text=True, timeout=180)
+    # Repli : le wrapper du projet sait démarrer proprement (compose).
+    if ARGUS_DEPLOY:
+        script = os.path.join(ARGUS_DEPLOY, "argus")
+        if os.path.exists(script):
+            subprocess.run(["bash", script, "--start"], capture_output=True,
+                           text=True, timeout=180)
     return conteneur_actif()
+
+
+# ------------------------------------------------- agent : quel mode utiliser ?
+def mode_actif():
+    """Renvoie 'conteneur' ou 'local' — ce qui est réellement disponible."""
+    global MODE
+    if MODE in ("conteneur", "local"):
+        return MODE
+    if conteneur_actif():
+        MODE = "conteneur"
+    else:
+        MODE = "local"
+    return MODE
+
+
+def _hermes_local():
+    """Chemin de la commande `hermes` sur la machine (installation simple)."""
+    for cand in (shutil.which("hermes"),
+                 os.path.expanduser("~/.local/bin/hermes"),
+                 "/usr/local/bin/hermes"):
+        if cand and os.path.exists(cand):
+            return cand
+    return "hermes"          # laissera échouer proprement si absent
 
 
 # ----------------------------------------------------------------- agent (chat)
@@ -149,19 +195,33 @@ _BRUIT_RE = re.compile(
 
 
 def interroger_agent(texte, session_id=None, timeout=600):
-    """Envoie `texte` au profil argus-client dans le conteneur.
+    """Envoie `texte` à l'agent ; renvoie (reponse_texte, nouveau_session_id).
 
-    Renvoie (reponse_texte, nouveau_session_id).
+    Fonctionne dans les deux modes :
+      - 'conteneur' : l'agent est isolé, on l'appelle par `docker exec` ;
+      - 'local'     : l'agent est installé sur la machine, on l'appelle
+                      directement (`hermes -p <profil> chat ...`).
     """
-    if not conteneur_actif() and not demarrer_conteneur():
-        raise RuntimeError("l'instance argus n'est pas démarrée (./argus --start)")
-
-    argv = ["exec", CONTENEUR, "hermes", "-p", PROFIL, "chat",
-            "-q", texte, "-Q", "--pass-session-id"]
+    argv_agent = ["-p", PROFIL, "chat", "-q", texte, "-Q", "--pass-session-id"]
     if session_id:
-        argv += ["--resume", session_id]
+        argv_agent += ["--resume", session_id]
 
-    p = _docker(argv, timeout=timeout)
+    if mode_actif() == "conteneur":
+        if not conteneur_actif() and not demarrer_conteneur():
+            raise RuntimeError("l'agent n'est pas démarré (conteneur injoignable)")
+        p = _docker(["exec", CONTENEUR, "hermes"] + argv_agent, timeout=timeout)
+    else:
+        hermes = _hermes_local()
+        try:
+            p = subprocess.run([hermes] + argv_agent, capture_output=True,
+                               text=True, timeout=timeout)
+        except FileNotFoundError:
+            raise RuntimeError(
+                "l'agent n'est pas installé sur cette machine (commande 'hermes' "
+                "introuvable). Installer Hermes Agent puis les profils Argus.")
+        except subprocess.TimeoutExpired:
+            raise RuntimeError("l'agent n'a pas répondu dans le délai imparti")
+
     out = (p.stdout or "") + (("\n" + p.stderr) if p.stderr else "")
     if p.returncode != 0:
         raise RuntimeError("l'agent a échoué: " + (p.stderr or p.stdout or "")[-400:])
@@ -297,7 +357,7 @@ class Handler(BaseHTTPRequestHandler):
             if chemin.startswith("/fichiers/"):
                 return self._servir_fichier(unquote(chemin[len("/fichiers/"):]))
             if chemin == "/api/sante":
-                return self._json({"ok": True, "conteneur": conteneur_actif()})
+                return self._json({"ok": True, "mode": mode_actif()})
             if chemin == "/api/notifications":
                 return self._notifications()
             return self._servir_statique(chemin)
@@ -551,7 +611,9 @@ def main():
 
     srv = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"[ui] interface Argus servie sur http://{args.host}:{args.port}")
-    print(f"[ui] conteneur {CONTENEUR} : {'en ligne' if conteneur_actif() else 'ARRÊTÉ'}")
+    m = mode_actif()
+    print(f"[ui] agent : mode {m}"
+          + (f" (conteneur {CONTENEUR})" if m == "conteneur" else " (installé sur la machine)"))
     print("[ui] Ctrl-C pour arrêter.")
     try:
         srv.serve_forever()
