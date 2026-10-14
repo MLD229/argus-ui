@@ -9,7 +9,8 @@
 #
 #  ACCÈS (plus de tunnel qui change à chaque fois !)
 #      - Local      : http://<ip-lan>:8080
-#      - URL FIXE   : https://argus-pc-1.tail49b6d2.ts.net   <- à installer en PWA
+#      - URL FIXE   : https://<votre-machine>.<votre-reseau>.ts.net  <- à installer en PWA
+#                     (calculée automatiquement, propre à cette machine)
 #
 #  POURQUOI UNE URL FIXE : une fois l'appli installée sur le téléphone, elle
 #  est liée à son adresse. Un tunnel éphémère (trycloudflare) change à chaque
@@ -26,7 +27,15 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PORT="${ARGUS_UI_PORT:-8080}"
 PID_SRV="$HERE/.ui.pid"
 TS_BIN=/usr/bin/tailscale
-URL_FIXE="https://argus-pc-1.tail49b6d2.ts.net"
+
+# L'adresse permanente N'EST PAS figée dans ce script : elle est DEMANDÉE à
+# Tailscale, car chaque machine a la sienne. (Piège vécu : une adresse codée en
+# dur ferait afficher l'adresse de la machine du développeur chez le client.)
+adresse_fixe() {
+  [ -x "$TS_BIN" ] || return 1
+  "$TS_BIN" serve status 2>/dev/null \
+    | grep -oE 'https://[a-z0-9.-]+\.ts\.net' | head -1
+}
 
 say() { echo "[argus-ui] $*"; }
 ui_actif() { [ -f "$PID_SRV" ] && kill -0 "$(cat "$PID_SRV" 2>/dev/null)" 2>/dev/null; }
@@ -64,16 +73,21 @@ assurer_acces_fixe() {
 }
 
 afficher() {
-  local ip
+  local ip u
   ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' | head -1)
   [ -n "$ip" ] || ip=127.0.0.1
+  u=$(adresse_fixe)
   echo
   echo "  ┌─ ACCÈS À L'INTERFACE ARGUS ──────────────────────────────"
   echo "  │ Local (même Wi-Fi) : http://$ip:$PORT"
-  echo "  │ URL FIXE (PWA)     : $URL_FIXE"
-  echo "  │   → sur téléphone : ouvrir cette URL une fois, puis"
-  echo "  │     « Ajouter à l'écran d'accueil ». Elle NE CHANGE PAS."
-  echo "  │   → prérequis : Tailscale installé et connecté sur le téléphone."
+  if [ -n "$u" ]; then
+    echo "  │ URL FIXE (PWA)     : $u"
+    echo "  │   → sur téléphone : ouvrir cette URL une fois, puis"
+    echo "  │     « Ajouter à l'écran d'accueil ». Elle NE CHANGE PAS."
+    echo "  │   → prérequis : Tailscale installé et connecté sur le téléphone."
+  else
+    echo "  │ URL FIXE (PWA)     : (pas encore — lancer ./argus-ui)"
+  fi
   echo "  └───────────────────────────────────────────────────────────"
   echo
 }
