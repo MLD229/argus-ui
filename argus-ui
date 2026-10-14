@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+# ============================================================================
+#  argus-ui — lance l'interface web Argus, accessible par une URL FIXE.
+#
+#  USAGE
+#      ./argus-ui                 # démarre l'interface + vérifie l'accès fixe
+#      ./argus-ui --stop          # arrête l'interface (l'accès Tailscale reste)
+#      ./argus-ui --status        # où en est-on + l'URL
+#
+#  ACCÈS (plus de tunnel qui change à chaque fois !)
+#      - Local      : http://<ip-lan>:8080
+#      - URL FIXE   : https://argus-pc-1.tail49b6d2.ts.net   <- à installer en PWA
+#
+#  POURQUOI UNE URL FIXE : une fois l'appli installée sur le téléphone, elle
+#  est liée à son adresse. Un tunnel éphémère (trycloudflare) change à chaque
+#  redémarrage -> l'icône installée pointerait dans le vide. Tailscale
+#  (`tailscale serve`) donne un nom HTTPS PERMANENT.
+#
+#  PRÉREQUIS COTÉ TÉLÉPHONE : avoir Tailscale installé et connecté au même
+#  compte. Ensuite, ouvrir l'URL fixe et « Ajouter à l'écran d'accueil ».
+#  Le réglage `tailscale serve` est persistant : il survit au redémarrage.
+# ============================================================================
+set -uo pipefail
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PORT="${ARGUS_UI_PORT:-8080}"
+PID_SRV="$HERE/.ui.pid"
+TS_BIN=/usr/bin/tailscale
+URL_FIXE="https://argus-pc-1.tail49b6d2.ts.net"
+
+say() { echo "[argus-ui] $*"; }
+ui_actif() { [ -f "$PID_SRV" ] && kill -0 "$(cat "$PID_SRV" 2>/dev/null)" 2>/dev/null; }
+
+demarrer_ui() {
+  if ui_actif; then say "interface déjà en ligne (pid $(cat "$PID_SRV"))."; return 0; fi
+  # L'agent confiné doit tourner : le wrapper ./argus le démarre si besoin.
+  [ -x /home/momo/projects/argus-deploy/argus ] && \
+    /home/momo/projects/argus-deploy/argus --start >/dev/null 2>&1 || true
+  say "démarrage de l'interface (port $PORT)…"
+  nohup python3 "$HERE/serveur-ui.py" --port "$PORT" > "$HERE/.ui.log" 2>&1 &
+  echo $! > "$PID_SRV"
+  for _ in $(seq 1 30); do
+    curl -s -m 2 -o /dev/null "http://127.0.0.1:$PORT/api/sante" && return 0
+    sleep 1
+  done
+  say "ATTENTION : pas de réponse. Voir $HERE/.ui.log"
+  return 1
+}
+
+# L'accès fixe est un réglage persistant de tailscaled ; on s'assure qu'il
+# pointe bien sur notre port (idempotent, silencieux si déjà bon).
+assurer_acces_fixe() {
+  if [ ! -x "$TS_BIN" ]; then say "tailscale absent — accès local seulement."; return 0; fi
+  local etat
+  etat=$("$TS_BIN" serve status 2>/dev/null | grep -c "127.0.0.1:$PORT")
+  if [ "$etat" -ge 1 ]; then
+    say "accès fixe déjà en place."
+  else
+    say "configuration de l'accès fixe (tailscale serve)…"
+    "$TS_BIN" serve --bg --https=443 "http://127.0.0.1:$PORT" >/dev/null 2>&1 \
+      && say "accès fixe configuré." \
+      || say "ATTENTION : 'tailscale serve' a échoué (voir --status)."
+  fi
+}
+
+afficher() {
+  local ip
+  ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' | head -1)
+  [ -n "$ip" ] || ip=127.0.0.1
+  echo
+  echo "  ┌─ ACCÈS À L'INTERFACE ARGUS ──────────────────────────────"
+  echo "  │ Local (même Wi-Fi) : http://$ip:$PORT"
+  echo "  │ URL FIXE (PWA)     : $URL_FIXE"
+  echo "  │   → sur téléphone : ouvrir cette URL une fois, puis"
+  echo "  │     « Ajouter à l'écran d'accueil ». Elle NE CHANGE PAS."
+  echo "  │   → prérequis : Tailscale installé et connecté sur le téléphone."
+  echo "  └───────────────────────────────────────────────────────────"
+  echo
+}
+
+case "${1:-}" in
+  --stop)
+    ui_actif && { kill "$(cat "$PID_SRV")" 2>/dev/null; rm -f "$PID_SRV"; say "interface arrêtée."; }
+    say "(l'accès fixe Tailscale reste actif — pour le retirer : $TS_BIN serve --https=443 off)"
+    exit 0 ;;
+
+  --status)
+    echo "interface : $(ui_actif && echo 'EN LIGNE' || echo 'arrêtée')"
+    echo "agent     : $(/home/momo/projects/argus-deploy/argus --etat 2>/dev/null | head -1)"
+    echo "accès fixe:"; "$TS_BIN" serve status 2>/dev/null | sed 's/^/            /' || echo "            (tailscale indisponible)"
+    afficher
+    exit 0 ;;
+esac
+
+demarrer_ui || exit 1
+assurer_acces_fixe
+afficher

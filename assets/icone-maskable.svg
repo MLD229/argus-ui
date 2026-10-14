@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Maskable : marge de securite ~20% autour du motif (zone de rognage Android) -->
+  <rect width="512" height="512" fill="#1E3A5F"/>
+  <g transform="translate(256 256) scale(8.7) translate(-12 -13)">
+    <path d="M5 18 12 7l7 11" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="12" cy="15.2" r="1.7" fill="#FFFFFF" stroke="none"/>
+  </g>
+</svg>

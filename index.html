@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#FAFAF8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#111214" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Argus — Assistant immobilier</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231E3A5F'/%3E%3Cpath d='M8 22l8-11 8 11' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='16' cy='19.5' r='1.9' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/style.css">
+
+  <!-- ===== Application installable (PWA) ===== -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Argus">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Argus">
+</head>
+<body>
+
+<!-- Icônes (sprite) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-logo" viewBox="0 0 24 24"><path d="M5 18 12 7l7 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="15.2" r="1.7" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+    <symbol id="i-speaker" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4Z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2.5"/><path d="M15.5 8.5V6.5A2.5 2.5 0 0 0 13 4H6.5A2.5 2.5 0 0 0 4 6.5V13a2.5 2.5 0 0 0 2.5 2.5h2"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7.5A2.5 2.5 0 0 0 5 5.5v13A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5V8l-5-5Z"/><path d="M14 3v5h5"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m4 17 5-4.5 4 3.5 3-2.5 4 3.5"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6H8l1.3-2h5.4L16 6h1.5A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5Z"/><circle cx="12" cy="12.5" r="3.5"/></symbol>
+    <symbol id="i-paperclip" viewBox="0 0 24 24"><path d="m20 11-8.3 8.3a5 5 0 0 1-7-7L13 4a3.3 3.3 0 0 1 4.7 4.7l-8.4 8.4a1.7 1.7 0 0 1-2.4-2.4L14.5 7"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v7a2.5 2.5 0 0 1-2.5 2.5H11l-4 3.5V16h-.5A2.5 2.5 0 0 1 5 13.5Z"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6.5 10a5.5 5.5 0 0 1 11 0c0 3 .8 4.6 1.6 5.5.4.5 0 1.3-.7 1.3H5.6c-.7 0-1.1-.8-.7-1.3.8-.9 1.6-2.5 1.6-5.5Z"/><path d="M10 19.5a2 2 0 0 0 4 0"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8"/><path d="M20 4v4h-4"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 16"/><path d="M4 20v-4h4"/></symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M4 12.5V5.5A1.5 1.5 0 0 1 5.5 4h7l7.5 7.5-7.5 7.5Z"/><circle cx="8.5" cy="8.5" r="1.3"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 7V5.2A1.2 1.2 0 0 1 10.7 4h2.6a1.2 1.2 0 0 1 1.2 1.2V7"/><path d="M6.5 7l.9 12.1A1.9 1.9 0 0 0 9.3 21h5.4a1.9 1.9 0 0 0 1.9-1.9L17.5 7"/><path d="M10.5 11v6M13.5 11v6"/></symbol>
+  </defs>
+</svg>
+
+<div class="app" id="app" data-sidebar="open">
+  <div class="scrim" id="scrim"></div>
+
+  <!-- ===== PANNEAU GAUCHE ===== -->
+  <aside class="sidebar" id="sidebar" aria-label="Discussions et fichiers">
+    <div class="sb-head">
+      <div class="brand">
+        <span class="logo"><svg class="ic" aria-hidden="true"><use href="#i-logo"/></svg></span>
+        <span class="brand-name">Argus</span>
+      </div>
+      <button type="button" class="icon-btn sb-close" id="sbClose" aria-label="Fermer le panneau">
+        <svg class="ic" aria-hidden="true"><use href="#i-close"/></svg>
+      </button>
+    </div>
+
+    <button type="button" class="btn-new" id="btnNew">
+      <svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>
+      Nouvelle discussion
+    </button>
+
+    <nav class="sb-scroll" aria-label="Historique">
+      <section>
+        <h2 class="sb-title">
+          <span>Discussions</span>
+          <button type="button" class="sb-tout-suppr" id="toutSuppr" title="Supprimer toutes les discussions">
+            <svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg>
+            <span>Tout supprimer</span>
+          </button>
+        </h2>
+        <ul class="list" id="convList"></ul>
+      </section>
+      <section>
+        <h2 class="sb-title">Fichiers partagés</h2>
+        <ul class="list" id="fileList"></ul>
+      </section>
+    </nav>
+
+    <div class="sb-foot">Argus · Immobilier Lyon</div>
+  </aside>
+
+  <!-- ===== ZONE DE CHAT ===== -->
+  <main class="chat">
+    <header class="topbar">
+      <button type="button" class="icon-btn" id="btnMenu" aria-label="Afficher ou masquer le panneau" aria-controls="sidebar" aria-expanded="true">
+        <svg class="ic" aria-hidden="true"><use href="#i-menu"/></svg>
+      </button>
+      <h1 class="title" id="chatTitle">Nouvelle discussion</h1>
+      <span class="pill" id="demoPill" hidden title="Les réponses sont simulées tant que le serveur n'est pas branché">Démo</span>
+      <button type="button" class="icon-btn notif-btn" id="btnNotifs" aria-label="Notifications" aria-expanded="false" aria-controls="notifPanel" title="Notifications de veille">
+        <svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg>
+        <span class="notif-badge" id="notifBadge" hidden>0</span>
+      </button>
+    </header>
+
+    <div class="messages" id="messages" role="log" aria-live="polite" aria-label="Conversation" tabindex="-1">
+      <div class="thread" id="thread"></div>
+    </div>
+
+    <div class="composer-wrap">
+      <form class="composer" id="composer" autocomplete="off">
+        <div class="tray" id="tray" hidden></div>
+        <div class="row">
+          <div class="plus-wrap">
+            <button type="button" class="round" id="btnPlus" aria-haspopup="menu" aria-expanded="false" aria-controls="plusMenu" aria-label="Joindre un fichier">
+              <svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>
+            </button>
+            <div class="menu" id="plusMenu" role="menu" hidden>
+              <button type="button" role="menuitem" id="miFile">
+                <svg class="ic" aria-hidden="true"><use href="#i-paperclip"/></svg>
+                <span><b>Joindre un fichier</b><small>Photo, plan ou PDF</small></span>
+              </button>
+              <button type="button" role="menuitem" id="miCamera" class="only-touch">
+                <svg class="ic" aria-hidden="true"><use href="#i-camera"/></svg>
+                <span><b>Prendre une photo</b><small>Avec l'appareil photo</small></span>
+              </button>
+            </div>
+          </div>
+
+          <textarea id="input" rows="1" placeholder="Écrivez votre message…" aria-label="Votre message" enterkeyhint="send"></textarea>
+
+          <button type="button" class="icon-btn mic" id="btnMic" aria-label="Dicter un message" aria-pressed="false">
+            <svg class="ic" aria-hidden="true"><use href="#i-mic"/></svg>
+          </button>
+          <button type="submit" class="send" id="btnSend" aria-label="Envoyer" disabled>
+            <svg class="ic" aria-hidden="true"><use href="#i-send"/></svg>
+          </button>
+        </div>
+      </form>
+      <p class="legal">Argus peut se tromper : vérifiez les chiffres importants avec leurs sources.</p>
+    </div>
+  </main>
+
+  <!-- ===== PANNEAU NOTIFICATIONS (tiroir droit) ===== -->
+  <aside class="notif-panel" id="notifPanel" aria-label="Notifications de veille" hidden>
+    <div class="np-head">
+      <div class="np-title">
+        <svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg>
+        <span>Notifications</span>
+        <span class="np-count" id="npCount"></span>
+      </div>
+      <div class="np-actions">
+        <button type="button" class="icon-btn" id="npRefresh" aria-label="Rafraîchir" title="Rafraîchir">
+          <svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg>
+        </button>
+        <button type="button" class="icon-btn" id="npClose" aria-label="Fermer le panneau">
+          <svg class="ic" aria-hidden="true"><use href="#i-close"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="np-filtres" id="npFiltres">
+      <button type="button" class="chip actif" data-filtre="">Toutes</button>
+      <button type="button" class="chip" data-filtre="annonce">Annonces</button>
+      <button type="button" class="chip" data-filtre="marche">Baisses</button>
+      <button type="button" class="chip" data-filtre="vente">Ventes</button>
+      <button type="button" class="chip" data-filtre="alerte">Alertes</button>
+    </div>
+
+    <div class="np-liste" id="npListe"></div>
+
+    <div class="np-foot">
+      <button type="button" class="btn-ghost" id="npToutLu">Tout marquer comme lu</button>
+      <button type="button" class="btn-ghost" id="npDemander">Demander à Argus</button>
+    </div>
+  </aside>
+
+  <div class="notif-scrim" id="notifScrim" hidden></div>
+</div>
+
+<input type="file" id="fileInput" multiple hidden accept="image/*,application/pdf,.pdf,.doc,.docx,.xls,.xlsx,.csv">
+<input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
+
+<!-- Glisser-déposer -->
+<div class="drop" id="drop" hidden>
+  <div class="drop-box">
+    <svg class="ic" aria-hidden="true"><use href="#i-paperclip"/></svg>
+    <strong>Déposez vos fichiers ici</strong>
+    <span>Photos, plans ou PDF</span>
+  </div>
+</div>
+
+<!-- Aperçu d'image -->
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Aperçu du fichier">
+  <button type="button" class="icon-btn lb-close" id="lbClose" aria-label="Fermer l'aperçu">
+    <svg class="ic" aria-hidden="true"><use href="#i-close"/></svg>
+  </button>
+  <img id="lbImg" alt="">
+  <p id="lbCap"></p>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

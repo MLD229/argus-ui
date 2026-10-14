@@ -1,0 +1,32 @@
+# ============================================================================
+#  Ce qui ne doit JAMAIS être publié.
+#  L'interface est publique ; les DONNÉES de l'utilisateur, jamais.
+# ============================================================================
+
+# Données d'utilisation — conversations, fichiers joints, état local.
+.etat/
+
+# Journaux et fichiers d'exécution.
+*.log
+.tunnel.log
+.ui.log
+.ui.pid
+.tunnel-url
+.tunnel.pid
+
+# Sauvegardes internes de travail.
+.sauvegardes/
+_ui-plat-origine/
+*.demo-origine
+
+# Briefs et notes internes (pas pour la distribution).
+BRIEF-RIN.md
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Divers
+.DS_Store
+*.swp

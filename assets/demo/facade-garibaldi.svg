@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 470" font-family="Inter, system-ui, Arial, sans-serif">
+  <defs>
+    <linearGradient id="ciel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#D5E2EF"/>
+      <stop offset="1" stop-color="#F6F1E7"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="470" fill="url(#ciel)"/>
+
+  <!-- Immeubles voisins -->
+  <rect x="10" y="120" width="140" height="300" fill="#D8CDB8"/>
+  <rect x="490" y="140" width="140" height="280" fill="#E3D8C2"/>
+  <g fill="#9DB0C4">
+    <rect x="30" y="150" width="30" height="46"/><rect x="90" y="150" width="30" height="46"/>
+    <rect x="30" y="230" width="30" height="46"/><rect x="90" y="230" width="30" height="46"/>
+    <rect x="30" y="310" width="30" height="46"/><rect x="90" y="310" width="30" height="46"/>
+    <rect x="510" y="170" width="30" height="46"/><rect x="570" y="170" width="30" height="46"/>
+    <rect x="510" y="250" width="30" height="46"/><rect x="570" y="250" width="30" height="46"/>
+    <rect x="510" y="330" width="30" height="46"/><rect x="570" y="330" width="30" height="46"/>
+  </g>
+
+  <!-- Toiture -->
+  <polygon points="140,56 500,56 468,16 172,16" fill="#5A6573"/>
+  <rect x="140" y="52" width="360" height="16" fill="#CDBF9F"/>
+
+  <!-- Façade -->
+  <rect x="150" y="68" width="340" height="342" fill="#E9DFCB"/>
+  <g fill="#D9CDB1">
+    <rect x="150" y="160" width="340" height="6"/>
+    <rect x="150" y="252" width="340" height="6"/>
+    <rect x="150" y="332" width="340" height="8"/>
+  </g>
+
+  <!-- Fenêtres des étages -->
+  <g fill="#7E97B3" stroke="#FFFFFF" stroke-width="3">
+    <rect x="169" y="86" width="46" height="64"/><rect x="254" y="86" width="46" height="64"/><rect x="339" y="86" width="46" height="64"/><rect x="424" y="86" width="46" height="64"/>
+    <rect x="169" y="178" width="46" height="64"/><rect x="254" y="178" width="46" height="64"/><rect x="339" y="178" width="46" height="64"/><rect x="424" y="178" width="46" height="64"/>
+    <rect x="169" y="270" width="46" height="52"/><rect x="254" y="270" width="46" height="52"/><rect x="339" y="270" width="46" height="52"/><rect x="424" y="270" width="46" height="52"/>
+  </g>
+  <g stroke="#FFFFFF" stroke-width="2">
+    <path d="M192 86v64M277 86v64M362 86v64M447 86v64M192 178v64M277 178v64M362 178v64M447 178v64"/>
+  </g>
+
+  <!-- Balcons au 2e étage -->
+  <g fill="none" stroke="#3A3F47" stroke-width="3">
+    <path d="M160 240h64M245 240h64M330 240h64M415 240h64"/>
+    <path d="M166 240v-16M180 240v-16M194 240v-16M208 240v-16M251 240v-16M265 240v-16M279 240v-16M293 240v-16M336 240v-16M350 240v-16M364 240v-16M378 240v-16M421 240v-16M435 240v-16M449 240v-16M463 240v-16"/>
+  </g>
+
+  <!-- Rez-de-chaussée -->
+  <g fill="#7E97B3" stroke="#FFFFFF" stroke-width="3">
+    <rect x="169" y="350" width="46" height="52"/>
+    <rect x="424" y="350" width="46" height="52"/>
+  </g>
+  <path d="M292 410V350a28 28 0 0 1 56 0V410Z" fill="#2F3E55"/>
+  <circle cx="338" cy="382" r="2.5" fill="#CDBF9F"/>
+
+  <!-- Trottoir et arbre -->
+  <rect x="0" y="410" width="640" height="60" fill="#B9B6AE"/>
+  <rect x="0" y="410" width="640" height="6" fill="#A7A39A"/>
+  <rect x="566" y="330" width="9" height="84" fill="#6B5A47"/>
+  <circle cx="570" cy="310" r="44" fill="#7C9A7A"/>
+  <circle cx="545" cy="330" r="28" fill="#6F8D6E"/>
+
+  <text x="24" y="448" font-size="12" fill="#4B4B46">Rue Garibaldi, Lyon 3e — visuel d'exemple</text>
+</svg>

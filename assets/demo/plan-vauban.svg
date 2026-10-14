@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" font-family="Inter, system-ui, Arial, sans-serif">
+  <rect width="640" height="480" fill="#FFFFFF"/>
+
+  <!-- Balcon -->
+  <rect x="70" y="14" width="230" height="26" fill="#EEF2F7" stroke="#1E3A5F" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="185" y="32" text-anchor="middle" font-size="12" fill="#5B6B80">Balcon</text>
+
+  <!-- Pièces -->
+  <rect x="40" y="40" width="300" height="200" fill="#F7F6F2"/>
+  <rect x="340" y="40" width="260" height="120" fill="#F1EFE9"/>
+  <rect x="340" y="160" width="260" height="80" fill="#FBFAF7"/>
+  <rect x="40" y="240" width="210" height="160" fill="#F1EFE9"/>
+  <rect x="250" y="240" width="130" height="160" fill="#EAF0F6"/>
+  <rect x="380" y="240" width="220" height="160" fill="#F1EFE9"/>
+
+  <!-- Murs -->
+  <g stroke="#1E3A5F" fill="none" stroke-linecap="square">
+    <rect x="40" y="40" width="560" height="360" stroke-width="6"/>
+    <g stroke-width="3">
+      <path d="M340 40V160"/>
+      <path d="M340 160H400M450 160H600"/>
+      <path d="M40 240H170M210 240H345M375 240H430M470 240H600"/>
+      <path d="M250 240V400"/>
+      <path d="M380 240V400"/>
+    </g>
+  </g>
+
+  <!-- Ouverture de la porte d'entrée -->
+  <path d="M600 185V225" stroke="#FFFFFF" stroke-width="8"/>
+
+  <!-- Fenêtres -->
+  <g fill="#FFFFFF" stroke="#7FA3C9" stroke-width="2">
+    <rect x="100" y="36" width="160" height="8"/>
+    <rect x="36" y="90" width="8" height="100"/>
+    <rect x="400" y="36" width="140" height="8"/>
+    <rect x="36" y="290" width="8" height="80"/>
+    <rect x="596" y="290" width="8" height="80"/>
+    <rect x="90" y="396" width="110" height="8"/>
+    <rect x="430" y="396" width="120" height="8"/>
+    <rect x="290" y="396" width="50" height="8"/>
+  </g>
+
+  <!-- Portes -->
+  <g stroke="#1E3A5F" stroke-width="1.5" fill="none">
+    <path d="M170 240V280M210 240A40 40 0 0 1 170 280"/>
+    <path d="M345 240V270M375 240A30 30 0 0 1 345 270"/>
+    <path d="M430 240V280M470 240A40 40 0 0 1 430 280"/>
+    <path d="M400 160V110M450 160A50 50 0 0 0 400 110"/>
+    <path d="M600 185H560M600 225A40 40 0 0 0 560 185"/>
+  </g>
+
+  <!-- Libellés -->
+  <g text-anchor="middle" fill="#1E3A5F">
+    <text x="190" y="132" font-size="16" font-weight="600">Séjour</text>
+    <text x="190" y="152" font-size="12" fill="#6B7A8C">23 m²</text>
+    <text x="470" y="92" font-size="16" font-weight="600">Cuisine</text>
+    <text x="470" y="112" font-size="12" fill="#6B7A8C">12 m²</text>
+    <text x="470" y="196" font-size="14" font-weight="600">Entrée</text>
+    <text x="470" y="214" font-size="12" fill="#6B7A8C">8 m²</text>
+    <text x="145" y="318" font-size="16" font-weight="600">Chambre 1</text>
+    <text x="145" y="338" font-size="12" fill="#6B7A8C">13 m²</text>
+    <text x="315" y="318" font-size="14" font-weight="600">Salle de bains</text>
+    <text x="315" y="336" font-size="12" fill="#6B7A8C">WC · 8 m²</text>
+    <text x="490" y="318" font-size="16" font-weight="600">Chambre 2</text>
+    <text x="490" y="338" font-size="12" fill="#6B7A8C">14 m²</text>
+  </g>
+
+  <!-- Légende -->
+  <text x="40" y="440" font-size="15" font-weight="600" fill="#1E3A5F">T3 · 78 m² · 3e étage avec ascenseur</text>
+  <text x="40" y="460" font-size="12" fill="#6B7A8C">Rue Vauban, Lyon 6e — plan d'exemple, sans valeur contractuelle</text>
+</svg>
